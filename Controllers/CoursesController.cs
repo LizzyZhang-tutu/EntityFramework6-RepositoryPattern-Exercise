@@ -8,21 +8,25 @@ using System.Web;
 using System.Web.Mvc;
 using ContosoUniversity.DAL;
 using ContosoUniversity.Models;
+using ContosoUniversity.Services;
 
 namespace ContosoUniversity.Controllers
 {
     public class CoursesController : Controller
     {
-        private readonly IUnitOfWork _unitOfWork;
+        //private readonly IUnitOfWork _unitOfWork;
+        private readonly ICourseService _courseService;
 
         public CoursesController()
         {
-            _unitOfWork = new UnitOfWork(new SchoolContext());
+            //_unitOfWork = new UnitOfWork(new SchoolContext());
+            _courseService = new CourseService();
         }
+
         // GET: Courses
         public ActionResult Index()
         {
-            return View(_unitOfWork.Courses.GetAll());
+            return View(_courseService.GetAllCourses());
         }
 
         // GET: Courses/Details/5
@@ -32,7 +36,7 @@ namespace ContosoUniversity.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            var course = _unitOfWork.Courses.Get(id.Value);
+            var course = _courseService.GetCourse(id.Value);
             if (course == null)
             {
                 return HttpNotFound();
@@ -53,8 +57,7 @@ namespace ContosoUniversity.Controllers
         {
             if (ModelState.IsValid)
             {
-                _unitOfWork.Courses.Add(course);
-                _unitOfWork.Complete();
+                _courseService.CreateCourse(course);
                 return RedirectToAction("Index");
             }
 
@@ -68,7 +71,7 @@ namespace ContosoUniversity.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            var course = _unitOfWork.Courses.Get(id.Value);
+            var course = _courseService.GetCourse(id.Value);
             if (course == null)
             {
                 return HttpNotFound();
@@ -83,8 +86,7 @@ namespace ContosoUniversity.Controllers
         {
             if (ModelState.IsValid)
             {
-                _unitOfWork.Courses.Update(course);
-                _unitOfWork.Complete();
+                _courseService.UpdateCourse(course);
                 return RedirectToAction("Index");
             }
             return View(course);
@@ -97,7 +99,7 @@ namespace ContosoUniversity.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            var course = _unitOfWork.Courses.Get(id.Value);
+            var course = _courseService.GetCourse(id.Value);
             if (course == null)
             {
                 return HttpNotFound();
@@ -110,19 +112,10 @@ namespace ContosoUniversity.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            var course = _unitOfWork.Courses.Get(id);
-            _unitOfWork.Courses.Remove(course);
-            _unitOfWork.Complete();
+            var course = _courseService.GetCourse(id);
+            _courseService.DeleteCourse(course);
             return RedirectToAction("Index");
         }
 
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _unitOfWork.Dispose();
-            }
-            base.Dispose(disposing);
-        }
     }
 }
